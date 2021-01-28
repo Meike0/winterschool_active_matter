@@ -10,13 +10,12 @@ using namespace std;
 
 /*****************************GLOBAL VARIABLES*******************************/
 //- I am lazy - using global variables is bad practice, better work with pointers instead. 
-double v[N][N][DIM]; //velocity vector 
 double c[N][N]; //density scalar
 double f[N][N]; //steady state solution
-    const double lambda = 0.1; //lambda
+    const double lambda = 1; //lambda
     const double Pe = sqrt(10); //peclet number
     const double tmax = 100; //maximum time
-    const double dt = 0.01; //timestep
+    const double dt = 0.001; //timestep
     const double tprint = 1; //printstep
     double Dwe; //value Dw and De, assigned in initialize_system
     double Dns; //value Dn and Ds, assigned in initialize_system
@@ -39,7 +38,7 @@ int main (int argc, char * argv[]){
     int tprint_steps = tprint/dt; 
    
     for(int d = 0 ; d < DIM ; d++ ) spacing[d] = systemsize[d]/N; // spacing between gridpoints 
-    
+    //cout << "system spacing = " << spacing[0] << endl; 
     initialize_system(spacing);
      
     for(int t = 0; t < tmax_steps ; t++){
@@ -85,10 +84,10 @@ void update_grid(double * spacing){
     for(int nx = 0; nx < N ; nx++){
         
         //periodic bc x
-        ne=nx-1; 
-        if(nx == 0 ) ne = N-1; 
-        nw=nx+1;
-        if( nx == N-1) nw = 0; 
+        nw=nx-1; 
+        if(nx == 0 ) nw = N-1; 
+        ne=nx+1;
+        if( nx == N-1) ne = 0; 
         
         for(int ny= 0; ny < N ; ny++){
             
@@ -99,11 +98,11 @@ void update_grid(double * spacing){
             if( ny == N-1) nn = 0;  
         
             //calculate all parameters   
-            ve=0.5*cos((nx-0.5)*spacing[0])*sin(ny*spacing[1]);
-            vw=0.5*cos((nx+0.5)*spacing[0])*sin(ny*spacing[1]);
+            ve=0.5*cos((nx+0.5)*spacing[0])*sin(ny*spacing[1]);
+            vw=0.5*cos((nx-0.5)*spacing[0])*sin(ny*spacing[1]);
             vn=0.5*sin(nx*spacing[0])*cos((ny+0.5)*spacing[1]);
             vs=0.5*sin(nx*spacing[0])*cos((ny-0.5)*spacing[1]);
-           // if(nx == 25 && ny == 25) cout << "ve = " << ve << " vw = " << vw << " vs = " << vs << " vn = " << vn << endl;
+            //if(nx == 25 && ny == 25) cout << "ve = " << ve << " vw = " << vw << " vs = " << vs << " vn = " << vn << endl;
             
             Fe=spacing[1]*0.5*ve;
             Fw=spacing[1]*0.5*vw;

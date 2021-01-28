@@ -16,8 +16,8 @@ double f[N][N]; //steady state solution
     const double lambda = 0.1; //lambda
     const double Pe = sqrt(10); //peclet number
     const double tmax = 100; //maximum time
-    const double dt = 0.001; //timestep
-    const double tprint = 10; //printstep
+    const double dt = 0.01; //timestep
+    const double tprint = 1; //printstep
     double Dwe; //value Dw and De, assigned in initialize_system
     double Dns; //value Dn and Ds, assigned in initialize_system
     
@@ -82,14 +82,14 @@ void update_grid(double * spacing){
     double Fw, Fe, Fn, Fs;    
     int ne, nw, ns, nn;
     double ve, vw, vs, vn; 
-    double S; //source, given by -Pe*div(m) 
-    for(int nx = 0; nx < N ; nx++){
+    double S,Se,Sw,Ss,Sn; //source, given by -Pe*div(m) 
+     for(int nx = 0; nx < N ; nx++){
         
         //periodic bc x
-        ne=nx-1; 
-        if(nx == 0 ) ne = N-1; 
-        nw=nx+1;
-        if( nx == N-1) nw = 0; 
+        nw=nx-1; 
+        if(nx == 0 ) nw = N-1; 
+        ne=nx+1;
+        if( nx == N-1) ne = 0; 
         
         for(int ny= 0; ny < N ; ny++){
             
@@ -100,12 +100,11 @@ void update_grid(double * spacing){
             if( ny == N-1) nn = 0;  
         
             //calculate all parameters   
-            ve=0.5*cos((nx-0.5)*spacing[0])*sin(ny*spacing[1]);
-            vw=0.5*cos((nx+0.5)*spacing[0])*sin(ny*spacing[1]);
+            ve=0.5*cos((nx+0.5)*spacing[0])*sin(ny*spacing[1]);
+            vw=0.5*cos((nx-0.5)*spacing[0])*sin(ny*spacing[1]);
             vn=0.5*sin(nx*spacing[0])*cos((ny+0.5)*spacing[1]);
             vs=0.5*sin(nx*spacing[0])*cos((ny-0.5)*spacing[1]);
-            S=-Pe*2.0*cos(nx*spacing[0])*cos(ny*spacing[1]); 
-           // if(nx == 25 && ny == 25) cout << "ve = " << ve << " vw = " << vw << " vs = " << vs << " vn = " << vn << endl;
+            //if(nx == 25 && ny == 25) cout << "ve = " << ve << " vw = " << vw << " vs = " << vs << " vn = " << vn << endl;
             
             Fe=spacing[1]*0.5*ve;
             Fw=spacing[1]*0.5*vw;
@@ -119,8 +118,19 @@ void update_grid(double * spacing){
            // if(nx == 25 && ny == 25) cout << "ae = " << ae << " aw = " << aw << " as = " << as << " an = " << an << endl;
             ap=ae+aw+as+an+(Fe-Fw+Fn-Fs); 
             //calculate new particle concentration
-            f[nx][ny]=(ae*c[ne][ny]+aw*c[nw][ny]+an*c[nx][nn]+as*c[nx][ns]+S-ap*c[nx][ny]);
-            // if(nx == 25 && ny == 25) cout << f[nx][ny] << endl; 
+            
+             S=-Pe*2.0*cos(nx*spacing[0])*cos(ny*spacing[1]); 
+             Sw= -Pe*spacing[1]*sin((nx-0.5)*spacing[0])*cos(ny*spacing[1]);
+             Se= -Pe*spacing[1]*sin((nx+0.5)*spacing[0])*cos(ny*spacing[1]);
+             Ss = -Pe*spacing[0]*cos(nx*spacing[0])*sin((ny-0.5)*spacing[1]);
+             Sn = -Pe*spacing[0]*Pe*sin(nx*spacing[0])*cos((ny+0.5)*spacing[1]);
+            f[nx][ny]=ae*c[ne][ny]+aw*c[nw][ny]+an*c[nx][nn]+as*c[nx][ns]+Sn-Ss+Se-Sw-ap*c[nx][ny];
+            
+            
+            
+            // if(nx == 25 && ny == 25) cout << f[nx][ny] << endl;
+            
+            
         }
     }
 }
@@ -130,7 +140,10 @@ void update_grid(double * spacing){
 void update_time(void){//Euler explicit
     for(int nx = 0 ; nx < N ; nx++){
        for(int ny = 0 ; ny < N ; ny++){
+           
           c[nx][ny]+=dt*f[nx][ny];
+          
+          
           //if(nx == 25 && ny == 25) cout << "c = " << c[nx][ny] <<  endl; 
        }
     }   

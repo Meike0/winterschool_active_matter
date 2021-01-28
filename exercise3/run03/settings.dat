@@ -1,6 +1,0 @@
-tmax	100
-dt	0.001
-N	100
-tprint	10
-lambda	0.1
-Pe	3.16228
